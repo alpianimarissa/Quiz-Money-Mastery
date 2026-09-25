@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambridge Math Stage 3 - Money Mastery Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        cambridge: {
+                            blue: '#003B46',
+                            teal: '#07575B',
+                            lightTeal: '#66A5AD',
+                            ice: '#C4DFE6',
+                            gold: '#FFB800',
+                            accent: '#FF6B6B'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        heading: ['Fredoka', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #F4F8FA;
+            user-select: none;
+        }
+        .font-heading {
+            font-family: 'Fredoka', cursive;
+        }
+        .card-transition {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .slide-enter {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        .slide-active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between bg-slate-50">
+
+    <!-- TOP HEADER -->
+    <header class="bg-cambridge-blue text-white sticky top-0 z-40 shadow-md">
+        <div class="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white/10 p-2.5 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-graduation-cap text-2xl text-cambridge-gold"></i>
+                </div>
+                <div>
+                    <span class="bg-cambridge-gold/20 text-cambridge-gold text-xs font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wide border border-cambridge-gold/30">
+                        Cambridge Stage 3
+                    </span>
+                    <h1 class="font-heading text-lg md:text-xl font-bold tracking-wide">Money Mastery Quiz</h1>
+                </div>
+            </div>
+            
+            <!-- Score & Reset Button -->
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 px-3.5 py-1.5 rounded-xl backdrop-blur-sm text-right">
+                    <div class="text-[10px] text-slate-300 flex items-center gap-1 justify-end">
+                        <i class="fa-solid fa-star text-amber-400"></i> Skor Saat Ini
+                    </div>
+                    <div class="font-heading text-base font-bold text-cambridge-gold flex items-center justify-end gap-1">
+                        <span id="score-display">0</span> Benar
+                    </div>
+                </div>
+
+                <button onclick="openResetModal()" class="bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-400/30 p-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center" title="Mulai Ulang Kuis">
+                    <i class="fa-solid fa-rotate-right text-sm"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- VISUAL PROGRESS BAR -->
+        <div class="w-full bg-slate-800/60 h-2">
+            <div id="progress-bar" class="bg-gradient-to-r from-amber-400 to-emerald-400 h-2 transition-all duration-300" style="width: 0%;"></div>
+        </div>
+    </header>
+
+    <!-- MAIN QUESTION CONTAINER -->
+    <main class="max-w-3xl w-full mx-auto px-4 py-6 flex-grow flex flex-col justify-center">
+        
+        <div id="question-card-wrapper" class="card-transition">
+            <!-- Question Card will be injected dynamically by JavaScript -->
+        </div>
+
+        <!-- NAVIGATION CONTROLS -->
+        <div class="mt-6 flex items-center justify-between gap-4">
+            <button id="btn-prev" onclick="prevQuestion()" class="flex-1 max-w-[180px] bg-white hover:bg-slate-100 text-slate-700 font-bold py-3 px-4 rounded-2xl border border-slate-200 shadow-sm transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-arrow-left"></i>
+                <span>Sebelumnya</span>
+            </button>
+
+            <div class="text-xs font-semibold text-slate-400 flex items-center gap-1 hidden sm:flex">
+                <i class="fa-solid fa-keyboard text-slate-300"></i> Use &larr; &rarr; keys
+            </div>
+
+            <button id="btn-next" onclick="nextQuestion()" class="flex-1 max-w-[180px] bg-cambridge-teal hover:bg-cambridge-blue text-white font-bold py-3 px-4 rounded-2xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                <span id="btn-next-text">Selanjutnya</span>
+                <i class="fa-solid fa-arrow-right" id="btn-next-icon"></i>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-4 text-xs text-slate-400">
+        Cambridge Primary Mathematics Stage 3 • Money Concept Practice
+    </footer>
+
+    <!-- RESET CONFIRMATION MODAL -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl border border-slate-100">
+            <div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-2xl flex items-center justify-center text-2xl mx-auto">
+                <i class="fa-solid fa-arrow-rotate-left"></i>
+            </div>
+            <h3 class="font-heading text-xl font-bold text-slate-800">Ulangi dari Awal?</h3>
+            <p class="text-slate-600 text-xs leading-relaxed">Semua jawaban yang sudah dipilih akan dihapus dan kamu bisa memulai latihan kembali.</p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeResetModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+                    Batal
+                </button>
+                <button onclick="confirmResetQuiz()" class="w-1/2 py-2.5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl transition">
+                    Ya, Ulangi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- COMPLETION MODAL -->
+    <div id="result-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full text-center space-y-5 shadow-2xl border border-slate-100">
+            <div class="w-20 h-20 bg-amber-100 text-amber-500 rounded-full flex items-center justify-center text-4xl mx-auto shadow-inner animate-bounce">
+                🏆
+            </div>
+            <div>
+                <h2 class="font-heading text-2xl md:text-3xl font-bold text-slate-800">Hebat Sekali!</h2>
+                <p class="text-slate-500 text-xs mt-1">Kamu telah menyelesaikan seluruh pertanyaan kuis Money Mastery.</p>
+            </div>
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2">
+                <div class="text-xs font-semibold text-slate-400">Hasil Pengerjaan</div>
+                <div id="modal-score" class="font-heading text-4xl font-bold text-cambridge-teal">0</div>
+                <div id="modal-percentage" class="text-xs font-bold text-amber-600">Akurasi: 0%</div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="closeModalAndReview()" class="w-1/2 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl transition">
+                    Tinjau Jawaban
+                </button>
+                <button onclick="confirmResetQuiz()" class="w-1/2 py-3 bg-cambridge-teal hover:bg-cambridge-blue text-white font-bold text-xs rounded-xl transition">
+                    Coba Lagi
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // -------------------------------------------------------------
+        // CAMBRIDGE MATH STAGE 3 MONEY QUESTIONS DATA
+        // -------------------------------------------------------------
+        const questionsData = [
+            // TOPIC 1: Reading & Fractions
+            {
+                id: 1,
+                topic: "Reading & Fractions",
+                text: "How do you read the amount <strong>$9.75</strong> using fractional terms?",
+                options: ["Nine dollars and a quarter", "Nine dollars and three quarters", "Nine dollars and a half", "Ninety-seven dollars and five cents"],
+                correct: 1,
+                explanation: "75 cents is three quarters of a dollar (3/4). So $9.75 is read as 'Nine dollars and three quarters'."
+            },
+            {
+                id: 2,
+                topic: "Reading & Fractions",
+                text: "Which value corresponds to the phrase <strong>'Two dollars and a quarter'</strong>?",
+                options: ["$2.25", "$2.50", "$2.75", "$2.05"],
+                correct: 0,
+                explanation: "A quarter of a dollar is 25 cents. Thus, 'Two dollars and a quarter' equals $2.25."
+            },
+            {
+                id: 3,
+                topic: "Reading & Fractions",
+                text: "What is the coin name for a <strong>$0.10</strong> (10 cents) coin?",
+                options: ["Penny", "Nickel", "Quarter", "Dime"],
+                correct: 3,
+                explanation: "A 10-cent coin ($0.10) is called a Dime."
+            },
+            {
+                id: 4,
+                topic: "Reading & Fractions",
+                text: "How is <strong>$14.05</strong> read correctly in words?",
+                options: ["Fourteen dollars and fifty cents", "Fourteen dollars and fifty dollars", "Fourteen dollars and five cents", "Fourteen cents and five dollars"],
+                correct: 2,
+                explanation: "$14.05 has 5 in the hundredths place (cents), so it is 'Fourteen dollars and five cents'."
+            },
+            {
+                id: 5,
+                topic: "Reading & Fractions",
+                text: "In informal conversation (slang), what does <strong>'A buck and a half'</strong> mean?",
+                options: ["$1.25", "$1.50", "$1.75", "$2.50"],
+                correct: 1,
+                explanation: "'A buck' means $1 and 'a half' means 50 cents. So 'A buck and a half' is $1.50."
+            },
+            {
+                id: 6,
+                topic: "Reading & Fractions",
+                text: "Which fraction of a dollar represents <strong>50 cents ($0.50)</strong>?",
+                options: ["1/2 dollar", "1/4 dollar", "3/4 dollar", "1/10 dollar"],
+                correct: 0,
+                explanation: "50 cents out of 100 cents is equal to 50/100 = 1/2 dollar (Half a dollar)."
+            },
+            {
+                id: 7,
+                topic: "Reading & Fractions",
+                text: "What coin is worth <strong>5 cents ($0.05)</strong>?",
+                options: ["Dime", "Quarter", "Penny", "Nickel"],
+                correct: 3,
+                explanation: "A 5-cent coin ($0.05) is known as a Nickel."
+            },
+            {
+                id: 8,
+                topic: "Reading & Fractions",
+                text: "How do you write <strong>'Eight dollars and twenty cents'</strong> in figures?",
+                options: ["$8.02", "$8.20¢", "$8.20", "$82.00"],
+                correct: 2,
+                explanation: "Eight dollars is $8, twenty cents is .20. Combined, it is written as $8.20."
+            },
+            {
+                id: 9,
+                topic: "Reading & Fractions",
+                text: "Which phrase describes the value <strong>$4.50</strong>?",
+                options: ["Four dollars and a quarter", "Four dollars and a half", "Four dollars and three quarters", "Four bucks"],
+                correct: 1,
+                explanation: "50 cents is half a dollar, so $4.50 is 'Four dollars and a half'."
+            },
+            {
+                id: 10,
+                topic: "Reading & Fractions",
+                text: "What is the name of a <strong>$0.01</strong> coin?",
+                options: ["Penny", "Nickel", "Dime", "Quarter"],
+                correct: 0,
+                explanation: "A 1-cent coin ($0.01) is called a Penny."
+            },
+            {
+                id: 11,
+                topic: "Reading & Fractions",
+                text: "How many quarters make up <strong>$1.00</strong>?",
+                options: ["2 quarters", "5 quarters", "10 quarters", "4 quarters"],
+                correct: 3,
+                explanation: "Each quarter is 25¢. $1.00 = 100¢. 100 / 25 = 4 quarters."
+            },
+            {
+                id: 12,
+                topic: "Reading & Fractions",
+                text: "Read this price tag: <strong>$0.75</strong>. Which is a correct reading?",
+                options: ["Seven dollars and five cents", "Seventy-five dollars", "Three quarters of a dollar", "A quarter of a dollar"],
+                correct: 2,
+                explanation: "$0.75 is 75 cents, which is three quarters of a dollar."
+            },
+            {
+                id: 13,
+                topic: "Reading & Fractions",
+                text: "If a shirt costs <strong>'Three bucks and a quarter'</strong>, how much does it cost in figures?",
+                options: ["$3.50", "$3.25", "$3.75", "$30.25"],
+                correct: 1,
+                explanation: "'Three bucks' = $3, 'a quarter' = 25¢. Combined: $3.25."
+            },
+
+            // TOPIC 2: Place Value & Conversion
+            {
+                id: 14,
+                topic: "Place Value & Conversion",
+                text: "In the amount <strong>$16.85</strong>, what place value does the digit <strong>8</strong> represent?",
+                options: ["Tenths (10¢ place)", "Hundredths (1¢ place)", "Ones ($1 place)", "Tens ($10 place)"],
+                correct: 0,
+                explanation: "The first digit to the right of the decimal point (8) represents Tenths, which is 80 cents."
+            },
+            {
+                id: 15,
+                topic: "Place Value & Conversion",
+                text: "In the amount <strong>$23.47</strong>, which digit is in the <strong>Hundredths (1¢)</strong> place?",
+                options: ["2", "3", "7", "4"],
+                correct: 2,
+                explanation: "The second digit after the decimal point (7) represents the Hundredths place (7 cents)."
+            },
+            {
+                id: 16,
+                topic: "Place Value & Conversion",
+                text: "Convert <strong>580¢</strong> into dollars and cents.",
+                options: ["$58.00", "$5.80", "$0.58", "$580.00"],
+                correct: 1,
+                explanation: "Since 100¢ = $1.00, 580¢ = 500¢ + 80¢ = $5.00 + $0.80 = $5.80."
+            },
+            {
+                id: 17,
+                topic: "Place Value & Conversion",
+                text: "How many cents are there in <strong>$7.05</strong>?",
+                options: ["75 cents", "750 cents", "70 cents", "705 cents"],
+                correct: 3,
+                explanation: "$7 = 700 cents. Adding 5 cents gives 705 cents."
+            },
+            {
+                id: 18,
+                topic: "Place Value & Conversion",
+                text: "Which breakdown correctly decomposes <strong>$9.42</strong>?",
+                options: ["$9 + 40¢ + 2¢", "$90 + 4¢ + 2¢", "$9 + 4¢ + 20¢", "$0.90 + 42¢"],
+                correct: 0,
+                explanation: "$9.42 decomposes into 9 dollars + 40 cents (4 tenths) + 2 cents (2 hundredths)."
+            },
+            {
+                id: 19,
+                topic: "Place Value & Conversion",
+                text: "In the money value <strong>$40.09</strong>, what is the value of the digit <strong>9</strong>?",
+                options: ["9 dollars", "90 cents", "9 cents", "90 dollars"],
+                correct: 2,
+                explanation: "Digit 9 is in the hundredths position, meaning 9 hundredths of a dollar or 9 cents."
+            },
+            {
+                id: 20,
+                topic: "Place Value & Conversion",
+                text: "What is <strong>$12.30</strong> expressed entirely in cents?",
+                options: ["123 cents", "1230 cents", "12300 cents", "12.3 cents"],
+                correct: 1,
+                explanation: "$12 is 1200 cents. 1200 + 30 = 1230 cents."
+            },
+            {
+                id: 21,
+                topic: "Place Value & Conversion",
+                text: "A coin piggy bank has <strong>645 cents</strong>. How is this written in dollar notation?",
+                options: ["$64.50", "$0.64", "$645.00", "$6.45"],
+                correct: 3,
+                explanation: "645 cents = 6 dollars and 45 cents = $6.45."
+            },
+            {
+                id: 22,
+                topic: "Place Value & Conversion",
+                text: "In <strong>$35.60</strong>, which digit is in the <strong>Tens ($10)</strong> place?",
+                options: ["3", "5", "6", "0"],
+                correct: 0,
+                explanation: "3 is in the Tens place ($30), 5 is in the Ones place ($5)."
+            },
+            {
+                id: 23,
+                topic: "Place Value & Conversion",
+                text: "Which of the following is equal to <strong>$0.90</strong>?",
+                options: ["9 cents", "900 cents", "90 cents", "9 dollars"],
+                correct: 2,
+                explanation: "$0.90 has 9 in the tenths place, which equals 90 cents."
+            },
+            {
+                id: 24,
+                topic: "Place Value & Conversion",
+                text: "What is the place value of digit <strong>0</strong> in <strong>$8.04</strong>?",
+                options: ["Ones", "Tenths", "Hundredths", "Tens"],
+                correct: 1,
+                explanation: "Digit 0 is immediately after the decimal point, representing 0 tenths (00 cents)."
+            },
+            {
+                id: 25,
+                topic: "Place Value & Conversion",
+                text: "Decompose <strong>$15.25</strong> into dollars, dimes (10¢), and nickels (5¢). Which is correct?",
+                options: ["$15 + 1 dime + 1 nickel", "$15 + 3 dimes", "$15 + 5 nickels", "$15 + 2 dimes + 1 nickel"],
+                correct: 3,
+                explanation: "25¢ = 20¢ + 5¢ = 2 dimes (10¢ each) + 1 nickel (5¢)."
+            },
+
+            // TOPIC 3: Comparing & Ordering
+            {
+                id: 26,
+                topic: "Comparing & Ordering",
+                text: "Which comparison symbol correctly fills the blank: <strong>$8.40 ___ $8.04</strong> ?",
+                options: ["<", "=", ">", "<="],
+                correct: 2,
+                explanation: "Both have $8. Compare cents: 40¢ is greater than 04¢ (4¢). So $8.40 > $8.04."
+            },
+            {
+                id: 27,
+                topic: "Comparing & Ordering",
+                text: "Which statement is <strong>TRUE</strong>?",
+                options: ["350¢ = $3.50", "$5.15 > $5.50", "$2.80 < 208¢", "$10.05 = $10.50"],
+                correct: 0,
+                explanation: "350 cents is exactly equal to 3 dollars and 50 cents ($3.50)."
+            },
+            {
+                id: 28,
+                topic: "Comparing & Ordering",
+                text: "Which amount is the <strong>SMALLEST</strong> among these four?",
+                options: ["$6.20", "$6.02", "$6.25", "$6.12"],
+                correct: 1,
+                explanation: "Comparing cents: 02¢ is smaller than 12¢, 20¢, and 25¢. So $6.02 is the smallest."
+            },
+            {
+                id: 29,
+                topic: "Comparing & Ordering",
+                text: "Which amount is the <strong>LARGEST</strong> among these four?",
+                options: ["$14.75", "$14.50", "$14.09", "$14.90"],
+                correct: 3,
+                explanation: "Comparing cents: 90¢ is the largest among 09¢, 50¢, 75¢, and 90¢. So $14.90 is the largest."
+            },
+            {
+                id: 30,
+                topic: "Comparing & Ordering",
+                text: "Order these values from <strong>smallest to largest</strong>: $3.10, $2.95, $3.05",
+                options: ["$3.10, $3.05, $2.95", "$3.05, $2.95, $3.10", "$2.95, $3.05, $3.10", "$2.95, $3.10, $3.05"],
+                correct: 2,
+                explanation: "$2.95 is smallest (< $3). Next is $3.05 (5¢), then $3.10 (10¢)."
+            },
+            {
+                id: 31,
+                topic: "Comparing & Ordering",
+                text: "Fill in the blank with the correct symbol: <strong>$11.25 ___ $11.50</strong>",
+                options: ["<", ">", "=", "+"],
+                correct: 0,
+                explanation: "Both have $11. Compare cents: 25¢ is less than 50¢ ($11.25 < $11.50)."
+            },
+            {
+                id: 32,
+                topic: "Comparing & Ordering",
+                text: "Which list is ordered from <strong>largest to smallest</strong>?",
+                options: ["$1.50, $1.75, $2.00", "$9.80, $9.45, $9.05", "$4.20, $4.50, $4.10", "$0.50, $0.25, $0.75"],
+                correct: 1,
+                explanation: "$9.80 > $9.45 > $9.05 is correctly arranged from largest to smallest."
+            },
+            {
+                id: 33,
+                topic: "Comparing & Ordering",
+                text: "Compare <strong>420¢</strong> and <strong>$4.25</strong>. Which sign is correct?",
+                options: [">", "=", ">=", "<"],
+                correct: 3,
+                explanation: "420¢ = $4.20. Comparing $4.20 and $4.25: $4.20 < $4.25."
+            },
+            {
+                id: 34,
+                topic: "Comparing & Ordering",
+                text: "Hannah has $5.50. Leo has $5.05. Who has more money?",
+                options: ["Hannah", "Leo", "Both have equal", "Cannot be determined"],
+                correct: 0,
+                explanation: "Hannah has $5.50 (50 cents) while Leo has $5.05 (5 cents). $5.50 > $5.05."
+            },
+            {
+                id: 35,
+                topic: "Comparing & Ordering",
+                text: "Which option shows three money amounts that are <strong>ALL greater than $7.30</strong>?",
+                options: ["$7.25, $7.35, $7.40", "$7.10, $7.20, $7.30", "$7.35, $7.50, $8.00", "$6.90, $7.40, $7.50"],
+                correct: 2,
+                explanation: "$7.35, $7.50, and $8.00 are all strictly greater than $7.30."
+            },
+            {
+                id: 36,
+                topic: "Comparing & Ordering",
+                text: "Which expression is equal to <strong>$15.00</strong>?",
+                options: ["150 cents", "1500 cents", "15000 cents", "15 cents"],
+                correct: 1,
+                explanation: "$15.00 = 15 x 100 cents = 1500 cents."
+            },
+            {
+                id: 37,
+                topic: "Comparing & Ordering",
+                text: "Which item is the most expensive?<br>Toy A: $12.80 | Toy B: $12.08 | Toy C: $12.50 | Toy D: $12.85",
+                options: ["Toy A", "Toy B", "Toy C", "Toy D"],
+                correct: 3,
+                explanation: "Toy D costs $12.85, which has the highest cents value (85¢) among all."
+            },
+
+            // TOPIC 4: Addition, Subtraction & Change
+            {
+                id: 38,
+                topic: "Addition, Subtraction & Change",
+                text: "Calculate: <strong>$4.30 + $2.50</strong> =",
+                options: ["$6.70", "$6.80", "$6.90", "$7.80"],
+                correct: 1,
+                explanation: "Add dollars: $4 + $2 = $6. Add cents: 30¢ + 50¢ = 80¢. Total = $6.80."
+            },
+            {
+                id: 39,
+                topic: "Addition, Subtraction & Change",
+                text: "Calculate: <strong>$10.00 - $3.40</strong> =",
+                options: ["$7.40", "$6.40", "$6.60", "$7.60"],
+                correct: 2,
+                explanation: "Count up from $3.40 to $4.00 is 60¢. From $4.00 to $10.00 is $6.00. Total = $6.60."
+            },
+            {
+                id: 40,
+                topic: "Addition, Subtraction & Change",
+                text: "Oliver buys a notebook for <strong>$3.25</strong> and a pen for <strong>$1.50</strong>. What is the total cost?",
+                options: ["$4.75", "$4.25", "$4.50", "$5.00"],
+                correct: 0,
+                explanation: "$3 + $1 = $4. 25¢ + 50¢ = 75¢. Total cost = $4.75."
+            },
+            {
+                id: 41,
+                topic: "Addition, Subtraction & Change",
+                text: "Emma buys a toy for <strong>$6.80</strong> and pays with a <strong>$10.00 note</strong>. How much change does she receive?",
+                options: ["$4.20", "$3.80", "$4.80", "$3.20"],
+                correct: 3,
+                explanation: "Change = $10.00 - $6.80. Count up: $6.80 + 20¢ = $7.00; $7.00 + $3.00 = $10.00. Change = $3.20."
+            },
+            {
+                id: 42,
+                topic: "Addition, Subtraction & Change",
+                text: "Calculate: <strong>$5.75 + $2.25</strong> =",
+                options: ["$7.00", "$7.80", "$8.00", "$8.25"],
+                correct: 2,
+                explanation: "$5 + $2 = $7. 75¢ + 25¢ = 100¢ = $1.00. $7 + $1 = $8.00."
+            },
+            {
+                id: 43,
+                topic: "Addition, Subtraction & Change",
+                text: "Noah has <strong>$15.00</strong>. He spends <strong>$8.50</strong> on a comic book. How much money does he have left?",
+                options: ["$7.50", "$6.50", "$6.00", "$7.00"],
+                correct: 1,
+                explanation: "$15.00 - $8.50. From $8.50 to $9.00 is 50¢. From $9.00 to $15.00 is $6.00. Remaining = $6.50."
+            },
+            {
+                id: 44,
+                topic: "Addition, Subtraction & Change",
+                text: "A juice box costs <strong>$1.40</strong> and a muffin costs <strong>$2.30</strong>. What is the total for 1 juice box and 1 muffin?",
+                options: ["$3.70", "$3.80", "$3.50", "$4.10"],
+                correct: 0,
+                explanation: "$1 + $2 = $3. 40¢ + 30¢ = 70¢. Total = $3.70."
+            },
+            {
+                id: 45,
+                topic: "Addition, Subtraction & Change",
+                text: "Ethan buys a board game for <strong>$14.20</strong> and pays with a <strong>$20.00 note</strong>. What is his change?",
+                options: ["$6.80", "$5.20", "$6.20", "$5.80"],
+                correct: 3,
+                explanation: "$20.00 - $14.20 = $5.80 (Count up: $14.20 + 80¢ = $15.00; $15.00 + $5.00 = $20.00)."
+            },
+            {
+                id: 46,
+                topic: "Addition, Subtraction & Change",
+                text: "Maya buys three items: an eraser for <strong>50¢</strong>, a pencil for <strong>75¢</strong>, and a ruler for <strong>$1.25</strong>. What is the total cost?",
+                options: ["$2.25", "$2.30", "$2.50", "$2.75"],
+                correct: 2,
+                explanation: "75¢ + 125¢ ($1.25) = 200¢ ($2.00). Add 50¢ = $2.50."
+            },
+            {
+                id: 47,
+                topic: "Addition, Subtraction & Change",
+                text: "Jack had <strong>$9.60</strong>. He bought a snack for <strong>$4.10</strong>. How much money does he have now?",
+                options: ["$5.40", "$5.50", "$5.60", "$4.50"],
+                correct: 1,
+                explanation: "$9 - $4 = $5. 60¢ - 10¢ = 50¢. Remaining = $5.50."
+            },
+            {
+                id: 48,
+                topic: "Addition, Subtraction & Change",
+                text: "Calculate: <strong>$7.80 + $3.40</strong> =",
+                options: ["$11.20", "$10.20", "$11.40", "$12.20"],
+                correct: 0,
+                explanation: "$7 + $3 = $10. 80¢ + 40¢ = 120¢ = $1.20. $10 + $1.20 = $11.20."
+            },
+            {
+                id: 49,
+                topic: "Addition, Subtraction & Change",
+                text: "Sophia bought a doll for <strong>$11.25</strong>. She paid with a <strong>$20.00 note</strong>. How much change should she get?",
+                options: ["$9.75", "$8.25", "$8.75", "$9.25"],
+                correct: 2,
+                explanation: "$20.00 - $11.25 = $8.75 ($11.25 + 75¢ = $12.00; $12.00 + $8.00 = $20.00)."
+            },
+            {
+                id: 50,
+                topic: "Addition, Subtraction & Change",
+                text: "Liam buys a sandwich for <strong>$4.60</strong> and a drink for <strong>$2.40</strong>. He pays with a <strong>$10.00 note</strong>. How much change does he get?",
+                options: ["$4.00", "$3.60", "$2.40", "$3.00"],
+                correct: 3,
+                explanation: "Total cost: $4.60 + $2.40 = $7.00. Change from $10 note: $10.00 - $7.00 = $3.00."
+            }
+        ];
+
+        // STATE MANAGEMENT
+        const STORAGE_KEY = 'cambridge_math_stage3_singlecard_quiz_state';
+        
+        let currentIndex = 0;
+        let userAnswers = {};
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    userAnswers = parsed.userAnswers || {};
+                    currentIndex = typeof parsed.currentIndex === 'number' ? parsed.currentIndex : 0;
+                }
+            } catch(e) {
+                console.error("Could not load state", e);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    userAnswers: userAnswers,
+                    currentIndex: currentIndex
+                }));
+            } catch(e) {
+                console.error("Could not save state", e);
+            }
+        }
+
+        // Web Audio Audio Feedback
+        function playChime(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'wrong') {
+                    osc.frequency.setValueAtTime(280, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.25);
+                    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                }
+            } catch(e) {}
+        }
+
+        // RENDER CURRENT QUESTION CARD
+        function renderCurrentQuestion() {
+            const wrapper = document.getElementById('question-card-wrapper');
+            const q = questionsData[currentIndex];
+
+            if (!q) return;
+
+            const isAnswered = userAnswers.hasOwnProperty(q.id);
+            const userChoice = isAnswered ? userAnswers[q.id] : null;
+            const isCorrect = isAnswered && (userChoice === q.correct);
+
+            const labels = ['A', 'B', 'C', 'D'];
+            let optionsHTML = '';
+
+            q.options.forEach((opt, idx) => {
+                let btnClass = "w-full text-left p-4 rounded-2xl border transition-all duration-200 font-medium text-sm flex items-center justify-between shadow-sm ";
+                let badgeClass = "w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs mr-3 border flex-shrink-0 ";
+
+                if (!isAnswered) {
+                    btnClass += "bg-white hover:bg-slate-100 hover:border-slate-300 border-slate-200 text-slate-800 cursor-pointer active:scale-[0.99]";
+                    badgeClass += "bg-slate-100 text-slate-600 border-slate-200";
+                } else {
+                    if (idx === q.correct) {
+                        btnClass += "bg-emerald-50 border-emerald-400 text-emerald-950 font-semibold ring-2 ring-emerald-300";
+                        badgeClass += "bg-emerald-600 text-white border-emerald-600";
+                    } else if (idx === userChoice && !isCorrect) {
+                        btnClass += "bg-rose-50 border-rose-400 text-rose-950 font-semibold ring-2 ring-rose-300";
+                        badgeClass += "bg-rose-600 text-white border-rose-600";
+                    } else {
+                        btnClass += "bg-slate-50/70 border-slate-200 text-slate-400 opacity-60";
+                        badgeClass += "bg-slate-200 text-slate-500 border-slate-200";
+                    }
+                }
+
+                optionsHTML += `
+                    <button onclick="handleOptionSelect(${q.id}, ${idx})" ${isAnswered ? 'disabled' : ''} class="${btnClass}">
+                        <div class="flex items-center">
+                            <span class="${badgeClass}">${labels[idx]}</span>
+                            <span class="leading-snug">${opt}</span>
+                        </div>
+                        ${isAnswered && idx === q.correct ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl ml-2"></i>' : ''}
+                        ${isAnswered && idx === userChoice && !isCorrect ? '<i class="fa-solid fa-circle-xmark text-rose-600 text-xl ml-2"></i>' : ''}
+                    </button>
+                `;
+            });
+
+            let feedbackHTML = '';
+            if (isAnswered) {
+                feedbackHTML = `
+                    <div class="mt-4 p-4 rounded-2xl text-xs space-y-1.5 ${isCorrect ? 'bg-emerald-100/90 text-emerald-950 border border-emerald-300' : 'bg-rose-100/90 text-rose-950 border border-rose-300'} animate-fade-in">
+                        <div class="font-bold flex items-center gap-1.5 text-sm">
+                            <i class="fa-solid ${isCorrect ? 'fa-circle-check text-emerald-700' : 'fa-circle-xmark text-rose-700'}"></i>
+                            <span>${isCorrect ? 'Benar Sekali!' : 'Kurang Tepat'}</span>
+                        </div>
+                        <p class="leading-relaxed"><strong>Penjelasan:</strong> ${q.explanation}</p>
+                    </div>
+                `;
+            }
+
+            wrapper.innerHTML = `
+                <div class="bg-white rounded-3xl p-6 md:p-8 border border-slate-200/80 shadow-md space-y-5">
+                    
+                    <!-- TOP CARD BADGE -->
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <span class="text-xs font-bold text-cambridge-teal bg-teal-50 border border-teal-200 px-3 py-1 rounded-full flex items-center gap-1.5">
+                            <i class="fa-solid fa-layer-group text-teal-600"></i> ${q.topic}
+                        </span>
+                        ${isAnswered ? `
+                            <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isCorrect ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                                ${isCorrect ? '✓ Terjawab Benar' : '✗ Kurang Tepat'}
+                            </span>
+                        ` : ''}
+                    </div>
+
+                    <!-- QUESTION TEXT -->
+                    <div class="font-bold text-slate-800 text-lg md:text-xl leading-relaxed">
+                        ${q.text}
+                    </div>
+
+                    <!-- OPTIONS -->
+                    <div class="space-y-3 pt-1">
+                        ${optionsHTML}
+                    </div>
+
+                    <!-- EXPLANATION FEEDBACK -->
+                    ${feedbackHTML}
+                </div>
+            `;
+
+            updateControlsAndHeader();
+        }
+
+        function handleOptionSelect(qId, selectedIdx) {
+            if (userAnswers.hasOwnProperty(qId)) return;
+
+            userAnswers[qId] = selectedIdx;
+            saveState();
+
+            const question = questionsData.find(q => q.id === qId);
+            if (selectedIdx === question.correct) {
+                playChime('correct');
+            } else {
+                playChime('wrong');
+            }
+
+            renderCurrentQuestion();
+        }
+
+        function updateControlsAndHeader() {
+            // Update Previous Button
+            const btnPrev = document.getElementById('btn-prev');
+            btnPrev.disabled = (currentIndex === 0);
+
+            // Update Next / Finish Button
+            const btnNext = document.getElementById('btn-next');
+            const btnNextText = document.getElementById('btn-next-text');
+            const btnNextIcon = document.getElementById('btn-next-icon');
+
+            if (currentIndex === questionsData.length - 1) {
+                btnNextText.innerText = "Lihat Hasil";
+                btnNextIcon.className = "fa-solid fa-trophy text-amber-300";
+            } else {
+                btnNextText.innerText = "Selanjutnya";
+                btnNextIcon.className = "fa-solid fa-arrow-right";
+            }
+
+            // Calculate Score
+            let correctCount = 0;
+            const answeredTotal = Object.keys(userAnswers).length;
+
+            questionsData.forEach(q => {
+                if (userAnswers[q.id] === q.correct) {
+                    correctCount++;
+                }
+            });
+
+            document.getElementById('score-display').innerText = correctCount;
+
+            // Update Progress Bar based on current index position
+            const progressPercent = ((currentIndex + 1) / questionsData.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        }
+
+        // NAVIGATION LOGIC
+        function prevQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                saveState();
+                animateTransition('prev');
+            }
+        }
+
+        function nextQuestion() {
+            if (currentIndex < questionsData.length - 1) {
+                currentIndex++;
+                saveState();
+                animateTransition('next');
+            } else {
+                // At last question, show summary modal
+                showCompletionModal();
+            }
+        }
+
+        function animateTransition(direction) {
+            const wrapper = document.getElementById('question-card-wrapper');
+            wrapper.style.opacity = '0';
+            wrapper.style.transform = direction === 'next' ? 'translateX(-20px)' : 'translateX(20px)';
+            
+            setTimeout(() => {
+                renderCurrentQuestion();
+                wrapper.style.transform = direction === 'next' ? 'translateX(20px)' : 'translateX(-20px)';
+                setTimeout(() => {
+                    wrapper.style.opacity = '1';
+                    wrapper.style.transform = 'translateX(0)';
+                }, 50);
+            }, 150);
+        }
+
+        // KEYBOARD & SWIPE CONTROLS
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextQuestion();
+            } else if (e.key === 'ArrowLeft') {
+                prevQuestion();
+            }
+        });
+
+        // Touch Swipe
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            const diff = touchEndX - touchStartX;
+            if (Math.abs(diff) > 50) {
+                if (diff < 0) {
+                    nextQuestion();
+                } else {
+                    prevQuestion();
+                }
+            }
+        }
+
+        // MODALS
+        function openResetModal() {
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function confirmResetQuiz() {
+            userAnswers = {};
+            currentIndex = 0;
+            saveState();
+            closeResetModal();
+            closeCompletionModal();
+            renderCurrentQuestion();
+        }
+
+        function showCompletionModal() {
+            let correctCount = 0;
+            questionsData.forEach((q) => {
+                if (userAnswers[q.id] === q.correct) correctCount++;
+            });
+
+            const percent = Math.round((correctCount / questionsData.length) * 100);
+            document.getElementById('modal-score').innerText = `${correctCount} Benar`;
+            document.getElementById('modal-percentage').innerText = `Akurasi Jawaban: ${percent}%`;
+            document.getElementById('result-modal').classList.remove('hidden');
+        }
+
+        function closeCompletionModal() {
+            document.getElementById('result-modal').classList.add('hidden');
+        }
+
+        function closeModalAndReview() {
+            closeCompletionModal();
+            currentIndex = 0;
+            renderCurrentQuestion();
+        }
+
+        // INITIALIZATION
+        window.onload = function() {
+            loadState();
+            renderCurrentQuestion();
+        };
+    </script>
+</body>
+</html>
